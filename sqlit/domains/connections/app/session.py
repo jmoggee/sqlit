@@ -6,6 +6,7 @@ of database connections and SSH tunnels, ensuring proper cleanup.
 
 from __future__ import annotations
 
+import threading
 from collections.abc import Callable
 from typing import TYPE_CHECKING, Any, cast
 
@@ -59,6 +60,7 @@ class ConnectionSession:
         self._tunnel = tunnel
         self._closed = False
         self._executor: DatabaseExecutor | None = None
+        self._executor_lock = threading.Lock()
 
     @classmethod
     def create(
@@ -164,8 +166,11 @@ class ConnectionSession:
     def executor(self) -> DatabaseExecutor:
         """Get or create the database executor for serialized operations.
 
-        The executor is lazily created on first access. All database operations
-        should go through this executor to ensure thread-safe access.
+        The executor is lazily created on first access, under a lock: several
+        threads can race for it (schema indexing spawns one worker each for
+        tables, views and procedures), and if they each built their own
+        single-thread executor they would run concurrently on the same DB-API
+        connection.
 
         Returns:
             The DatabaseExecutor for this session.
@@ -178,7 +183,9 @@ class ConnectionSession:
         if self._executor is None:
             from .executor import DatabaseExecutor
 
-            self._executor = DatabaseExecutor(self)
+            with self._executor_lock:
+                if self._executor is None:
+                    self._executor = DatabaseExecutor(self)
         return self._executor
 
     def switch_database(self, database: str) -> None:
