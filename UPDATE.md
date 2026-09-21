@@ -7,8 +7,8 @@ branch. Upstream is `origin`; the writable fork is `fork`. Never push to
 
 ## Current upstream changes
 
-The 2026-09-20 update fetched both remotes and found `origin/main` unchanged at
-`5ad4559` since the 2026-09-18 run, so no new upstream functionality arrived.
+The 2026-09-21 update fetched both remotes and found `origin/main` unchanged at
+`5ad4559` since the 2026-09-20 run, so no new upstream functionality arrived.
 That upstream commit added the Vesper theme and made result rendering preserve
 safe UTF-8 byte values as text while falling back to hexadecimal for unsafe bytes.
 It also fixed byte-field previews and removed filter highlighting from cell
@@ -45,7 +45,7 @@ references identify the same instance.
 
 ### Upstream equivalent
 
-No. Reviewed `origin/main` at `5ad4559` on 2026-09-20. Despite the new theme
+No. Reviewed `origin/main` at `5ad4559` on 2026-09-21. Despite the new theme
 and result-rendering work, it still performs an unsynchronized
 `if self._executor is None` followed by construction and assignment.
 
